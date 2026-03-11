@@ -1,102 +1,60 @@
 package com.s1.gestion_profesion.config;
 
-import io.jsonwebtoken.*;
+import com.s1.gestion_profesion.model.Usuario;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
+import java.util.Map;
 
-@Service // Lo marco como servicio porque será usado para generar y validar tokens
+@Service
 public class JwtService {
-    /*
-     * Esta es mi clave secreta.
-     * Con esta clave se firma el token.
-     * IMPORTANTE: en producción esto NO va en el código.
-     * Se guarda en variables de entorno.
-     *
-     * Pero para clase lo dejo así para que sea más didáctico.
-     */
-    private final String SECRET = "clave_super_secreta_para_clase_2026";
-    /*
-     * Tiempo de expiración del token.
-     * Aquí lo estoy configurando a 30 minutos.
-     * (1000 ms * 60 seg * 30 min)
-     */
-    private final long EXPIRATION = 1000 * 60 * 30; // 30 minutos
 
-    /*
-     * Este método convierte el String secreto en una Key válida
-     * para poder firmar el token con algoritmo HS256.
-     */
+    @Value("${app.security.jwt.secret}")
+    private String secret;
+
+    @Value("${app.security.jwt.expiration-ms:1800000}")
+    private long expiration;
+
     private Key getKey() {
-        return Keys.hmacShaKeyFor(SECRET.getBytes());
+        return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
-    // Generar token
-    public String generateToken(String username) {
-        /*
-         * Aquí construyo el JWT.
-         *
-         * El token tendrá:
-         * - Subject → el username
-         * - Fecha de creación
-         * - Fecha de expiración
-         * - Firma digital
-         */
+    public String generateToken(Usuario usuario) {
         return Jwts.builder()
-                // Información principal del token (quién es el usuario)
-                .setSubject(username)
-
-                // Fecha en que se crea el token
+                .setClaims(Map.of("role", usuario.getRole()))
+                .setSubject(usuario.getUsername())
                 .setIssuedAt(new Date())
-
-                // Fecha en que expira
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION))
-
-                // Firma con algoritmo HS256 usando mi clave secreta
+                .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getKey(), SignatureAlgorithm.HS256)
-
-                // Construye el token final en formato String
                 .compact();
     }
 
-    // Validar token
-    public String validateToken(String token) {
-        /*
-         * Este método:
-         * - Verifica que la firma sea correcta
-         * - Verifica que no esté expirado
-         * - Si todo está bien, devuelve el username
-         *
-         * Si algo falla, devuelve null.
-         */
-        try {
-            return Jwts.parserBuilder()
-                    // Le paso la misma clave con la que firmé
-                    .setSigningKey(getKey())
-                    .build()
+    public String extractUsername(String token) {
+        return extractAllClaims(token).getSubject();
+    }
 
-                    // Intenta parsear el token
-                    .parseClaimsJws(token)
+    public boolean isTokenValid(String token, UserDetails userDetails) {
+        String username = extractUsername(token);
+        return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
+    }
 
-                    // Obtengo el body (claims)
-                    .getBody()
+    private boolean isTokenExpired(String token) {
+        return extractAllClaims(token).getExpiration().before(new Date());
+    }
 
-                    // Devuelvo el subject (username)
-                    .getSubject();
-        } catch (Exception e) {
-
-            /*
-             * Si el token:
-             * - Está vencido
-             * - Fue modificado
-             * - La firma no coincide
-             *
-             * Lanza excepción y retorna en null.
-             */
-
-            return null;
-        }
+    private Claims extractAllClaims(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(getKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
     }
 }

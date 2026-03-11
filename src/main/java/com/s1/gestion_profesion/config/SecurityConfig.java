@@ -5,6 +5,8 @@ import org.springframework.context.annotation.*;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -17,60 +19,32 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    // Inyecto mi filtro JWT personalizado
-    // Este filtro es el que va a leer el token en cada petición
     private final JwtFilter jwtFilter;
 
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        /*
-         * Aquí estoy configurando toda la seguridad de la aplicación.
-         * En Spring Security moderno ya no se usa WebSecurityConfigurerAdapter,
-         * sino que se define un SecurityFilterChain como Bean.
-         */
         return http
-                // ESTA LÍNEA ES NUEVA PARA EL CORS
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                // Desactivo CSRF porque mi API es REST y trabaja con JWT (stateless).
-                // CSRF se usa más cuando hay sesiones y formularios.
                 .csrf(csrf -> csrf.disable())
-
-                // Le digo a Spring que no quiero sesiones.
-                // Cada request debe venir autenticado con su propio token.
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                // Aquí defino qué endpoints son públicos y cuáles no.
                 .authorizeHttpRequests(auth -> auth
-                        // Permito acceso libre al login.
-                        // Si lo protegiera, el usuario necesitaría token para obtener token.
                         .requestMatchers("/auth/login").permitAll()
-                        //Esta me permite acceso OPTIONS, desde el frotend, evitando el CORS
+                        .requestMatchers("/", "/app", "/app/**", "/css/**", "/js/**", "/images/**", "/error").permitAll()
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        // Permito endpoints públicos de persona.
-                        // Esto lo hago para mostrar diferencia entre public y private.
                         .requestMatchers("/api/persona/public/**").permitAll()
-                        // Todo lo demás requiere autenticación.
-                        // Si no mandan token válido, no entra.
                         .anyRequest().authenticated()
                 )
-                /*
-                 * Aquí agrego mi filtro JWT antes del filtro
-                 * UsernamePasswordAuthenticationFilter.
-                 *
-                 * Porque quiero que primero se valide el token
-                 * antes de que Spring intente autenticar usuario y contraseña.
-                 *
-                 * Este filtro será el encargado de:
-                 * - Leer el header Authorization
-                 * - Extraer el token
-                 * - Validarlo
-                 * - Cargar el usuario en el contexto de seguridad
-                 */
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-                // Finalmente construyo la configuración
                 .build();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 
     @Bean
@@ -78,7 +52,12 @@ public class SecurityConfig {
 
         CorsConfiguration config = new CorsConfiguration();
 
-        config.setAllowedOrigins(List.of("http://127.0.0.1:5500", "http://localhost:5500"));
+        config.setAllowedOrigins(List.of(
+                "http://127.0.0.1:5500",
+                "http://localhost:5500",
+                "http://127.0.0.1:8080",
+                "http://localhost:8080"
+        ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
