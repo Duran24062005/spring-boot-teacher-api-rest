@@ -6,6 +6,7 @@ import com.s1.gestion_profesion.mapper.ProfesionMapper;
 import com.s1.gestion_profesion.model.Profesion;
 import com.s1.gestion_profesion.repository.ProfesionRepository;
 import com.s1.gestion_profesion.service.ProfesionService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -25,7 +26,7 @@ public class ProfesionServiceImpl implements ProfesionService {
 
     @Override
     public ProfesionResponseDTO actualizarProfesion(ProfesionRequestDTO dto, Long id) {
-        Profesion p=profesionRepository.findById(id).orElseThrow(()->new RuntimeException("No existe dicha profesion a actualizar"));
+        Profesion p=profesionRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("No existe dicha profesion a actualizar"));
         profesionMapper.actualizarEntidadDesdeDTO(p,dto);
         Profesion p_actualizada=profesionRepository.save(p);
         return profesionMapper.entidadADTO(p_actualizada);
@@ -33,7 +34,7 @@ public class ProfesionServiceImpl implements ProfesionService {
 
     @Override
     public void eliminarProfesion(Long id) {
-        Profesion p=profesionRepository.findById(id).orElseThrow(()->new RuntimeException("No existe dicha profesion a eliminar"));
+        Profesion p=profesionRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("No existe dicha profesion a eliminar"));
         profesionRepository.delete(p);
     }
     @Override
@@ -60,7 +61,7 @@ public class ProfesionServiceImpl implements ProfesionService {
 
     @Override
     public ProfesionResponseDTO buscarPorId(Long id) {
-        Profesion p=profesionRepository.findById(id).orElseThrow(()->new RuntimeException("No existe dicha profesion"));
+        Profesion p=profesionRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("No existe dicha profesion"));
         return profesionMapper.entidadADTO(p);
     }
 }

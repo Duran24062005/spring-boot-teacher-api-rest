@@ -37,12 +37,12 @@ public class ProfesionController {
                             description = "Datos no válidos / body mal estructurado")
             }
     )
-    public ResponseEntity<ProfesionResponseDTO> guardar(@RequestBody ProfesionRequestDTO dto){
+    public ResponseEntity<ProfesionResponseDTO> guardar(@Valid @RequestBody ProfesionRequestDTO dto){
         return ResponseEntity.status(HttpStatus.CREATED).body(profesionService.guardarProfesion(dto));
     }
     //localhost:8080/api/profesion/2
     @PutMapping("/{id}")
-    public ResponseEntity<ProfesionResponseDTO> actualizar(@RequestBody ProfesionRequestDTO dto,
+    public ResponseEntity<ProfesionResponseDTO> actualizar(@Valid @RequestBody ProfesionRequestDTO dto,
                                                            @Parameter(description = "Id de la profesion a actualizar", example = "1")@PathVariable Long id){
         return ResponseEntity.ok().body(profesionService.actualizarProfesion(dto, id));
     }

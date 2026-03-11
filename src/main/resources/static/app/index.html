@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion Profesion</title>
+    <link rel="stylesheet" href="/app/styles.css">
+    <script defer src="/app/app.js"></script>
+</head>
+<body>
+<div class="page-shell">
+    <header class="hero">
+        <div class="hero-copy">
+            <p class="eyebrow">Spring Boot + JWT + MySQL</p>
+            <h1>Gestion de personas y profesiones</h1>
+            <p class="hero-text">
+                Interfaz web ligera en HTML, CSS y JavaScript puro para autenticarse y consumir la API del proyecto.
+            </p>
+        </div>
+        <div class="hero-card">
+            <span class="hero-card-label">Credenciales semilla</span>
+            <strong>admin / admin123</strong>
+            <p>Estas credenciales existen en el archivo SQL generado para pruebas locales.</p>
+        </div>
+    </header>
+
+    <main class="layout">
+        <section class="panel auth-panel">
+            <div class="panel-heading">
+                <h2>Sesion</h2>
+                <span id="session-badge" class="badge badge-idle">Sin autenticar</span>
+            </div>
+
+            <form id="login-form" class="stack">
+                <label>
+                    <span>Usuario</span>
+                    <input id="username" name="username" type="text" value="admin" required>
+                </label>
+                <label>
+                    <span>Contrasena</span>
+                    <input id="password" name="password" type="password" value="admin123" required>
+                </label>
+                <div class="actions">
+                    <button type="submit">Iniciar sesion</button>
+                    <button type="button" id="logout-btn" class="button-secondary">Cerrar sesion</button>
+                </div>
+            </form>
+
+            <div class="session-meta">
+                <p><strong>Usuario:</strong> <span id="session-user">-</span></p>
+                <p><strong>Rol:</strong> <span id="session-role">-</span></p>
+            </div>
+        </section>
+
+        <section class="panel status-panel">
+            <div class="panel-heading">
+                <h2>Estado</h2>
+                <button id="refresh-all-btn" class="button-secondary">Recargar datos</button>
+            </div>
+            <pre id="status-box">Listo.</pre>
+        </section>
+
+        <section class="panel">
+            <div class="panel-heading">
+                <h2>Vista publica de personas</h2>
+                <button id="load-public-btn" class="button-secondary">Consultar</button>
+            </div>
+            <div id="public-personas" class="cards"></div>
+        </section>
+
+        <section class="panel">
+            <div class="panel-heading">
+                <h2>Profesiones</h2>
+                <button id="load-profesiones-btn" class="button-secondary">Listar</button>
+            </div>
+
+            <form id="profesion-form" class="stack">
+                <input id="profesion-id" type="hidden">
+                <label>
+                    <span>Nombre</span>
+                    <input id="profesion-nombre" type="text" maxlength="50" required>
+                </label>
+                <label>
+                    <span>Descripcion</span>
+                    <textarea id="profesion-descripcion" maxlength="50" required></textarea>
+                </label>
+                <div class="actions">
+                    <button type="submit">Guardar profesion</button>
+                    <button type="button" id="reset-profesion-btn" class="button-secondary">Limpiar</button>
+                </div>
+            </form>
+
+            <div id="profesiones-list" class="cards"></div>
+        </section>
+
+        <section class="panel">
+            <div class="panel-heading">
+                <h2>Personas</h2>
+                <div class="inline-actions">
+                    <button id="load-personas-btn" class="button-secondary">Listar</button>
+                    <button id="load-age-filter-btn" class="button-secondary">Filtrar por edad</button>
+                </div>
+            </div>
+
+            <form id="persona-form" class="stack">
+                <input id="persona-id" type="hidden">
+                <label>
+                    <span>Documento</span>
+                    <input id="persona-documento" type="text" required>
+                </label>
+                <label>
+                    <span>Nombre</span>
+                    <input id="persona-nombre" type="text" required>
+                </label>
+                <label>
+                    <span>Apellido</span>
+                    <input id="persona-apellido" type="text" required minlength="2" maxlength="25">
+                </label>
+                <div class="split">
+                    <label>
+                        <span>Edad</span>
+                        <input id="persona-edad" type="number" min="1" required>
+                    </label>
+                    <label>
+                        <span>Salario</span>
+                        <input id="persona-salario" type="number" min="0" step="0.01" required>
+                    </label>
+                </div>
+                <label>
+                    <span>Profesion</span>
+                    <select id="persona-profesion" required>
+                        <option value="">Selecciona una profesion</option>
+                    </select>
+                </label>
+                <label>
+                    <span>Filtro edad mayor que</span>
+                    <input id="persona-edad-filtro" type="number" min="1" value="25">
+                </label>
+                <div class="actions">
+                    <button type="submit">Guardar persona</button>
+                    <button type="button" id="reset-persona-btn" class="button-secondary">Limpiar</button>
+                </div>
+            </form>
+
+            <div id="personas-list" class="cards"></div>
+        </section>
+    </main>
+</div>
+</body>
+</html>

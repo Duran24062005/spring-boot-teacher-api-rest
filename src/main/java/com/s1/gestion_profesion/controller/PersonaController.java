@@ -33,6 +33,11 @@ public class PersonaController {
         return ResponseEntity.ok().body(personaService.actualizarPersona(dto, id));
     }
 
+    @GetMapping
+    public ResponseEntity<List<PersonaResponseDTO>> listarTodosPrivado(){
+        return ResponseEntity.ok().body(personaService.listarPersonas());
+    }
+
     @GetMapping("/public")
     public ResponseEntity<List<PersonaResponseDTO>>  listarTodos(){
         return ResponseEntity.ok().body(personaService.listarPersonas());
